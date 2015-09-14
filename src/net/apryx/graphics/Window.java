@@ -103,11 +103,22 @@ public final class Window {
 		
 		glfwSetMouseButtonCallback(windowHandle, mouseCallback);
 		
+		glfwSetWindowTitle(windowHandle, title);
+		
 		setWindowPos(100,100);
 		
 		makeCurrent();
 		
 		GLContext.createFromCurrent();
+	}
+	
+	public String getTitle(){
+		return title;
+	}
+	
+	public void setTitle(String title){
+		this.title = title;
+		glfwSetWindowTitle(windowHandle, title);
 	}
 	
 	public void setCursorHidden(boolean hidden){
