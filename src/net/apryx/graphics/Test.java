@@ -1,20 +1,30 @@
 package net.apryx.graphics;
 
-import net.apryx.input.Keys;
+import net.apryx.input.Mouse;
 
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 public class Test {
 
-	public static void main(String[] args) throws Exception {
-		Window window = new Window(1920,1080, true);
+	public static void main(String[] args) {
+		Window window = new Window(1920, 1080, true);
 
 		window.setVisible(true);
-		window.setCursorHidden(true);
+		window.setCursorHidden(false);
+		
+		double previous = 0;
+		double avarage = 0.0016;
 		
 		int size = 4;
 
 		while (!window.isCloseRequested()) {
+			
+			double current = GLFW.glfwGetTime();
+			double delta = current - previous;
+			avarage = (avarage * 99 + delta) / 100;
+			System.out.println("Avarage : " + Math.round(avarage * 10000) / 10d + "ms, thats " + Math.round(1 / avarage * 10) / 10d + "fps");
+			
 			window.pollEvents();
 
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
@@ -22,17 +32,18 @@ public class Test {
 			GL11.glLoadIdentity();
 			GL11.glMatrixMode(GL11.GL_PROJECTION);
 			GL11.glLoadIdentity();
+			
 			GL11.glOrtho(0, window.getWidth(), window.getHeight(), 0, -100, 100);
 			GL11.glMatrixMode(GL11.GL_MODELVIEW);
 			
 
 			float r = 1, g = 1, b = 1, s = 1;
 
-			if(window.isKeyDown(Keys.X)){
+			if(window.isMouseButtonDown(Mouse.RIGHT)){
 				r = 0;
 				s += 0.5f;
 			}
-			if(window.isKeyDown(Keys.Z)){
+			if(window.isMouseButtonDown(Mouse.LEFT)){
 				g = 0;
 				s += 0.5f;
 			}
@@ -58,7 +69,9 @@ public class Test {
 
 			window.swap();
 			
-			Thread.sleep(8);
+			previous = current;
+			
+			window.sleep(8);
 		}
 
 		window.destroy();

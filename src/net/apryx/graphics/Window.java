@@ -1,6 +1,13 @@
 package net.apryx.graphics;
 
 import static org.lwjgl.glfw.Callbacks.errorCallbackPrint;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_HIDDEN;
+import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
+import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_FALSE;
 import static org.lwjgl.opengl.GL11.GL_TRUE;
@@ -8,9 +15,13 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.util.Arrays;
 
+import net.apryx.input.Keys;
+import net.apryx.input.Mouse;
+
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.opengl.GLContext;
 
 public final class Window {
@@ -21,10 +32,15 @@ public final class Window {
 	private static GLFWErrorCallback errorCallback;
 	private GLFWKeyCallback keyCallback;
 	private GLFWCursorPosCallback cursorCallback;
+	private GLFWMouseButtonCallback mouseCallback;
 	
 	private boolean[] keyStates;
 	private boolean[] keyPresses;
 	private boolean[] keyReleases;
+	
+	private boolean[] mouseStates;
+	private boolean[] mousePresses;
+	private boolean[] mouseReleases;
 	
 	private float mouseX;
 	private float mouseY;
@@ -52,9 +68,13 @@ public final class Window {
 	}
 	
 	private void init(){
-		keyStates = new boolean[GLFW_KEY_LAST];
-		keyPresses = new boolean[GLFW_KEY_LAST];
-		keyReleases = new boolean[GLFW_KEY_LAST];
+		keyStates = new boolean[Keys.LAST];
+		keyPresses = new boolean[Keys.LAST];
+		keyReleases = new boolean[Keys.LAST];
+		
+		mouseStates = new boolean[Mouse.LAST];
+		mousePresses = new boolean[Mouse.LAST];
+		mouseReleases = new boolean[Mouse.LAST];
 		
 		if(windowCount != 0)
 			System.err.println("Multiple windows active. This may result in some unexpected behaviour.");
@@ -84,6 +104,10 @@ public final class Window {
 		cursorCallback = new CursorCallback();
 		
 		glfwSetCursorPosCallback(windowHandle, cursorCallback);
+		
+		mouseCallback = new MouseButtonCallback();
+		
+		glfwSetMouseButtonCallback(windowHandle, mouseCallback);
 		
 		setWindowPos(100,100);
 		
@@ -123,6 +147,18 @@ public final class Window {
 	public boolean isKeyReleased(int keycode){
 		return keyReleases[keycode];
 	}
+
+	public boolean isMouseButtonPressed(int keycode){
+		return mousePresses[keycode];
+	}
+	
+	public boolean isMouseButtonDown(int keycode){
+		return mouseStates[keycode];
+	}
+	
+	public boolean isMouseButtonReleased(int keycode){
+		return mouseReleases[keycode];
+	}
 	
 	public void setWindowPos(int x, int y){
 		if(!fullscreen)
@@ -145,9 +181,19 @@ public final class Window {
 		swap();
 	}
 	
+	public void sleep(long ms){
+		try{
+			Thread.sleep(ms);
+		}catch(Exception e){
+			
+		}
+	}
+	
 	public void pollEvents(){
 		Arrays.fill(keyPresses,false);
 		Arrays.fill(keyReleases,false);
+		Arrays.fill(mousePresses,false);
+		Arrays.fill(mouseReleases,false);
 		mouseDX = 0;
 		mouseDY = 0;
 		
@@ -184,15 +230,19 @@ public final class Window {
 	
 	public void destroy(){
 		windowCount--;
+		
+		if(errorCallback != null)
+			errorCallback.release();
+		if(keyCallback != null)
+			keyCallback.release();
+		if(mouseCallback != null)
+			mouseCallback.release();
+		
 		glfwDestroyWindow(windowHandle);
 		if(windowCount == 0){
-			glfwTerminate();
 			glfwInit = false;
 			
-			if(errorCallback != null)
-				errorCallback.release();
-			if(keyCallback != null)
-				keyCallback.release();
+			glfwTerminate();
 		}
 	}
 	
@@ -217,6 +267,22 @@ public final class Window {
 			
 			mouseX = (float) x;
 			mouseY = (float) y;
+		}
+		
+	}
+	
+	private class MouseButtonCallback extends GLFWMouseButtonCallback {
+
+		@Override
+		public void invoke(long windowHandle, int button, int action, int mods) {
+			if(action == GLFW_PRESS){
+				mousePresses[button] = true;
+				mouseStates[button] = true;
+			}
+			if(action == GLFW_RELEASE){
+				mouseReleases[button] = true;
+				mouseStates[button] = false;
+			}
 		}
 		
 	}
