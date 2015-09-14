@@ -2,7 +2,6 @@ package net.apryx.graphics;
 
 import net.apryx.input.Mouse;
 
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 public class Test {
@@ -20,7 +19,7 @@ public class Test {
 
 		while (!window.isCloseRequested()) {
 			
-			double current = GLFW.glfwGetTime();
+			double current = window.getTime();
 			double delta = current - previous;
 			avarage = (avarage * 99 + delta) / 100;
 			System.out.println("Avarage : " + Math.round(avarage * 10000) / 10d + "ms, thats " + Math.round(1 / avarage * 10) / 10d + "fps");
