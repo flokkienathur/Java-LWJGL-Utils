@@ -315,4 +315,6 @@ public final class Keys {
 	public static final int BEGIN = 0xFF58;
 
 	public static final int UNDEFINED = 0x0;
+	
+	public static final int LAST = 0x15c;
 }
